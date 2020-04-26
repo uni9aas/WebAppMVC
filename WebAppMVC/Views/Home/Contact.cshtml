@@ -1,0 +1,116 @@
+﻿@*
+    Ref:
+        https://social.msdn.microsoft.com/Forums/pt-BR/f7c0d348-dd80-4a8c-aa94-caf4a23d6671/how-to-select-child-nodes-in-particular-xml-node?forum=csharplanguage
+    Colocar em _Layout.cshtml:
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    Veja mais:
+        https://www.w3schools.com/w3css/tryit.asp?filename=tryw3css_tables_hoverable
+*@
+
+@{
+    ViewData["Title"] = "Contato";
+}
+<h2>@ViewData["Title"]</h2>
+@*<h3>@ViewData["Message"]</h3>*@
+
+<address>
+    Antonio Andrade<br />
+    Professor Universitário<br />
+    Coordenador de desenvolvimento de sistemas  <br />
+    Co-founder <a href="www.smit.net.br" target="_blank">SMIT</a>
+    e <a href="www.viaclient.com.br" target="_blank">Viaclient</a><br />
+    <abbr title="Blog"></abbr>
+    <a href="www.aas.pro.br">AAS.pro.br</a>
+</address>
+
+<address>
+    <strong>Support:</strong> <a href="mailto:a.a.s@uni9.pro.br">a.a.s@uni9.pro.br</a><br />
+    <strong>LGPD:</strong> <a href="mailto:lgpd@outlook.com.br">mailto:lgpd@outlook.com.br</a>
+</address>
+<hr />
+
+@{
+    String ret = GetFeriados();
+
+    string GetFeriados()
+    {
+        string ano = "2020";
+        string estado = "SP";
+        string cidade = "São Paulo";
+        string token = "dW5pOWFhc0BnbWFpbC5jb20maGFzaD02MDI0NTI5OQ";
+
+        string strURL = String.Format("https://api.calendario.com.br/?ano={0}&estado={1}&cidade={2}&token={3}", ano, estado, cidade, token);
+
+        System.Uri objUrl = new System.Uri(strURL);
+        System.Net.WebRequest objWebReq;
+        System.Net.WebResponse objResp;
+        System.IO.StreamReader sReader;
+        string strReturn = string.Empty;
+
+        try
+        {
+            objWebReq = System.Net.WebRequest.Create(objUrl);
+            objResp = objWebReq.GetResponse();
+
+            sReader = new System.IO.StreamReader(objResp.GetResponseStream());
+            strReturn = sReader.ReadToEnd();
+
+            sReader.Close();
+            objResp.Close();
+        }
+        catch (Exception ex)
+        {
+            Console.Write(ex.ToString());
+        }
+        finally
+        {
+            objWebReq = null;
+        }
+
+        return strReturn;
+    }
+
+
+}
+<hr />
+<h3 style="text-align:center">FERIADOS DO ANO: 2020</h3>
+
+@using System
+@using System.Xml
+
+<div class="w3-container">
+    <table class="w3-table-all w3-hoverable">
+        <tr>
+            <th>Data</th>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Tipo</th>
+            <th>#</th>
+            <th>Veja mais (link)</th>
+        </tr>
+        @{
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(ret);
+
+            XmlNodeList xnList = xmlDoc.SelectNodes("/events/event");
+            foreach (XmlNode xn in xnList)
+            {
+                String dt = xn["date"].InnerText;
+                string nm = xn["name"].InnerText;
+                string ds = xn["description"].InnerText;
+                string tp = xn["type"].InnerText;
+                string tc = xn["type_code"].InnerText;
+                string ln = xn["link"].InnerText;
+
+                <tr>
+                    <td>@dt</td>
+                    <td>@nm</td>
+                    <td>@ds</td>
+                    <td>@tp</td>
+                    <td>@tc</td>
+                    <td><a href="@ln" target="_blank">@ln</a></td>
+                </tr>
+            }
+        }
+    </table>
+</div>
